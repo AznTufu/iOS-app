@@ -26,6 +26,7 @@ struct GameView: View {
     @State private var playerBalance = 1000
     @State private var playerBet = 0
     @State private var resetGame = true
+    @State private var isPlayerWinner: Bool? = nil
     
     var betOptions: [Int] {
         if playerBalance == 0 {
@@ -124,7 +125,11 @@ struct GameView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.green.opacity(0.3))
+                    .background(
+                        isPlayerWinner == true ? Color.green.opacity(0.3) :
+                        (isPlayerWinner == false ? Color.red.opacity(0.3) : Color.blue.opacity(0.3))
+                    )
+                    .cornerRadius(10)
                     .cornerRadius(10)
 
                     VStack(alignment: .leading) {
@@ -155,7 +160,10 @@ struct GameView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.red.opacity(0.3))
+                    .background(
+                        isPlayerWinner == true ? Color.red.opacity(0.3) :
+                        (isPlayerWinner == false ? Color.green.opacity(0.3) : Color.blue.opacity(0.3))
+                    )
                     .cornerRadius(10)
                 }
                 .padding()
@@ -274,6 +282,7 @@ struct GameView: View {
             
             if playerScore > 21 {
                 gameMessage = "Le joueur dépasse 21 !\nLe dealer gagne."
+                isPlayerWinner = false
             }
         } else {
             while dealerScore < 17 {
@@ -296,6 +305,7 @@ struct GameView: View {
             if playerScore > 21 {
                 gameMessage = "Le joueur dépasse 21 !\nLe dealer gagne."
                 playerBet = 0
+                isPlayerWinner = false
             } else {
                 drawCard(for: .dealer)
             }
@@ -318,21 +328,26 @@ struct GameView: View {
         if dealerScore > 21 {
             gameMessage = "Le dealer dépasse 21 !\nLe joueur gagne !"
             playerBalance += playerBet * 2
+            isPlayerWinner = true
         } else if playerScore > dealerScore {
             gameMessage = "Le joueur gagne !"
             playerBalance += playerBet * 2
+            isPlayerWinner = true
         } else if dealerScore > playerScore {
             gameMessage = "Le dealer gagne !"
             playerBalance -= playerBet
+            isPlayerWinner = false
             if playerBalance < 0 {
                 playerBalance = 0
             }
         } else if dealerScore == 21 && playerScore == 21 {
             gameMessage = "C'est une égalité.\nVous gagnez"
             playerBalance += playerBet * 2
+            isPlayerWinner = nil
         } else {
             gameMessage = "C'est une égalité."
             playerBalance += playerBet
+            isPlayerWinner = nil
         }
         playerBet = 0
     }
@@ -346,6 +361,7 @@ struct GameView: View {
         resetGame = true
         deck = createDeck()
         deck.shuffle()
+        isPlayerWinner = nil
     }
 }
 
