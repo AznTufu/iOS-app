@@ -1,19 +1,13 @@
-//
-//  GameView.swift
-//  blackjack
-//
-//  Created by ZHANG Tony on 16/10/2024.
-//
-
 import SwiftUI
 
-struct Card {
+struct Card: Identifiable {
+    var id: String { "\(name) \(suit)" }
     var name: String
     var suit: String
 }
 
 struct GameView: View {
-    let cardSuits = ["Cœurs", "Carreaux", "Trèfles", "Piques"]
+    let cardSuits = ["Cœur", "Carreau", "Trèfle", "Pique"]
     let cardNames = ["As", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Valet", "Dame", "Roi"]
     
     @State private var deck: [Card] = []
@@ -56,8 +50,9 @@ struct GameView: View {
             
             Text("Solde du Joueur : \(playerBalance) €")
                 .font(.title2)
-                .padding()
-
+            
+            Spacer()
+            
             if resetGame {
                 VStack {
                     let columns = [
@@ -89,13 +84,35 @@ struct GameView: View {
                     }
                 }
             } else {
+                Text("Cartes restantes : \(deck.count)")
+                    .font(.headline)
                 Text("Votre Mise : \(playerBet) €")
                     .font(.title2)
-                    .padding()
                 
-                HStack {
+                VStack {
                     VStack(alignment: .leading) {
-                        Text("Cartes du Joueur : \(playerCards.map { $0.name }.joined(separator: ", "))")
+                        Text("Cartes du Joueur :")
+                        let columns = [
+                            GridItem(.adaptive(minimum: 70))
+                        ]
+                        
+                        LazyVGrid(columns: columns, spacing: 10) {
+                            ForEach(playerCards) { card in
+                                VStack {
+                                    Text(card.name)
+                                        .font(.headline)
+                                    Image(card.suit)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 20, height: 20)
+                                }
+                                .frame(width: 70, height: 100)
+                                .background(Color.white)
+                                .cornerRadius(5)
+                                .shadow(radius: 2)
+                                .padding(2)
+                            }
+                        }
                         Text("Score : \(playerScore)")
                     }
                     .padding()
@@ -104,7 +121,29 @@ struct GameView: View {
                     .cornerRadius(10)
 
                     VStack(alignment: .leading) {
-                        Text("Cartes du Dealer : \(dealerCards.map { $0.name }.joined(separator: ", "))")
+                        Text("Cartes du Dealer :")
+
+                        let columns = [
+                            GridItem(.adaptive(minimum: 70))
+                        ]
+                        
+                        LazyVGrid(columns: columns, spacing: 10) {
+                            ForEach(dealerCards) { card in
+                                VStack {
+                                    Text(card.name)
+                                        .font(.headline)
+                                    Image(card.suit)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 20, height: 20)
+                                }
+                                .frame(width: 70, height: 100)
+                                .background(Color.white)
+                                .cornerRadius(5)
+                                .shadow(radius: 2)
+                                .padding(2)
+                            }
+                        }
                         Text("Score : \(dealerScore)")
                     }
                     .padding()
@@ -122,7 +161,6 @@ struct GameView: View {
                             .foregroundColor(.white)
                             .cornerRadius(10)
                     }
-                    .padding()
                 } else {
                     HStack {
                         Button(action: { self.drawCard(for: .player) }) {
@@ -148,9 +186,9 @@ struct GameView: View {
                                 .cornerRadius(10)
                         }
                     }
-                    .padding()
                 }
             }
+            Spacer()
         }
         .onAppear(perform: setupGame)
     }
@@ -299,6 +337,8 @@ struct GameView: View {
         dealerScore = 0
         gameMessage = "Blackjack"
         resetGame = true
+        deck = createDeck()
+        deck.shuffle()
     }
 }
 
